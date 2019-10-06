@@ -17,6 +17,26 @@ canvas.width = (CELL_SIZE +1) * width + 1;
 canvas.height = (CELL_SIZE + 1) * height +1;
 const ctx = canvas.getContext('2d');
 
+let STATE = 'stop';
+const playEl = document.getElementById("play");
+
+const pause = () => {
+    STATE = 'pause';
+    playEl.textContent = 'play';
+    playEl.removeEventListener('click', pause);
+    playEl.addEventListener('click', play);
+}
+
+const play = () => {
+    STATE = 'play';
+    playEl.textContent = 'pause';
+    playEl.removeEventListener('click', play);
+    playEl.addEventListener('click', pause);
+    renderLoop();
+}
+
+playEl.addEventListener('click', play);
+
 const drawGrid = (ctx) => {
     ctx.beginPath();
     ctx.strokeStyle = GRID_COLOR;
@@ -63,6 +83,9 @@ const drawCells = (ctx, universe) => {
 }
 
 const renderLoop = () => {
+    if (STATE == 'pause') {
+	return;
+    }
     universe.tick();
 
     drawGrid(ctx);
@@ -70,5 +93,3 @@ const renderLoop = () => {
     
     requestAnimationFrame(renderLoop);
 }
-
-requestAnimationFrame(renderLoop);
