@@ -76,7 +76,7 @@ const drawGrid = (ctx) => {
     ctx.stroke();
 }
 
-const getIndex = (row, col) => {
+const getIndex = (col, row) => {
     return row * width + col;
 }
 
@@ -85,7 +85,8 @@ const drawCells = (ctx, cells) => {
     cells.forEach((cell) => {
 	ctx.fillRect(cell.x * (CELL_SIZE+1) + 1, cell.y * (CELL_SIZE + 1) + 1,
 		     CELL_SIZE, CELL_SIZE);
-	universeInitState.push(getIndex(cell.x, cell.y));
+	const idx = getIndex(cell.x, cell.y);
+	universeInitState.push(idx);
     });
     ctx.stroke();
 }
@@ -104,7 +105,7 @@ const drawUniverse = (ctx, universe) => {
 
     for (let row = 0; row < height; row++) {
 	for (let col = 0; col < width; col++) {
-	    const idx = getIndex(row, col);
+	    const idx = getIndex(col, row);
 
 	    ctx.fillStyle = bitIsSet(idx, cells) ?  ALIVE_COLOR : DEAD_COLOR;
 	    ctx.fillRect(col * (CELL_SIZE+1) + 1, row * (CELL_SIZE + 1) + 1,
@@ -151,7 +152,7 @@ const canvasLineToCells = (x1, y1, x2, y2) => {
     }
     let cells = [];
     for (let x = x1; x <= x2; x++) {
-	let cell= cellFromPx(x, y(x));
+	let cell = cellFromPx(x, y(x));
 	cells.push(cell);
     }
     return cells;
