@@ -1,5 +1,6 @@
 mod utils;
 use js_sys::Math;
+use std::collections::HashMap;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
@@ -26,10 +27,31 @@ pub struct Universe {
 // Public methods, exported to JavaScript
 #[wasm_bindgen]
 impl Universe {
+    pub fn new_with_state(alive_cells: &[u32]) -> Universe {
+        let width = 64;
+        let height = 64;
+        let mut is_alive: HashMap<u32, bool> = HashMap::new();
+
+        for v in alive_cells.iter() {
+            is_alive.insert(*v, true);
+        }
+
+        let cells = (0..width * height)
+            .map(|i| match is_alive.get(&i) {
+                Some(_) => Cell::Alive,
+                None => Cell::Dead,
+            })
+            .collect();
+
+        Universe {
+            width,
+            height,
+            cells,
+        }
+    }
     pub fn new() -> Universe {
         let width = 64;
         let height = 64;
-
         let cells = (0..width * height)
             .map(|_i| {
                 if Math::random() > 0.5 {
