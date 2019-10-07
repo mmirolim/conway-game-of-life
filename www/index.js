@@ -44,10 +44,12 @@ const play = (e) => {
     canvas.width = (CELL_SIZE +1) * width + 1;
     canvas.height = (CELL_SIZE + 1) * height +1;
     ctx = canvas.getContext('2d');
-    if (universeInitState.length > 0) {
-	universe = Universe.new_with_state(width, height, new Uint32Array(universeInitState));
-    } else {
-	universe = Universe.new(width, height);
+    if (!universe) { // init universe
+	if (universeInitState.length > 0) {
+	    universe = Universe.new_with_state(width, height, new Uint32Array(universeInitState));
+	} else {
+	    universe = Universe.new(width, height);
+	}
     }
     renderLoop();
 }
@@ -211,7 +213,7 @@ const resetEl = document.getElementById("reset");
 const reset = () => {
     STATE = 'stop';
     universeInitState = [];
-    universe = Universe.new();
+    universe = null;
     drawLines = [];
     DRAW_IN_PROCESS = false;
     DRAW_ON_CANVAS = false;
@@ -229,13 +231,14 @@ const canvasDraw = () => {
     if (ctx) {
 	reset();
     }
-    DRAW_ON_CANVAS = !DRAW_ON_CANVAS;
+    DRAW_ON_CANVAS = true;
     width = parseInt(inputWidth.value);
     height = parseInt(inputHeight.value);
     canvas.width = (CELL_SIZE +1) * width + 1;
     canvas.height = (CELL_SIZE + 1) * height +1;
     ctx = canvas.getContext('2d');
 }
+
 const drawBtn = document.getElementById("draw");
 drawBtn.addEventListener('click', canvasDraw);
 
