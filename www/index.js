@@ -21,18 +21,20 @@ const ctx = canvas.getContext('2d');
 let STATE = 'stop';
 const playEl = document.getElementById("play");
 
-const pause = () => {
+const pause = (e) => {
     STATE = 'pause';
-    playEl.textContent = 'play';
-    playEl.removeEventListener('click', pause);
-    playEl.addEventListener('click', play);
+    let target = e.target;
+    target.textContent = 'play';
+    target.removeEventListener('click', pause);
+    target.addEventListener('click', play);
 }
 
-const play = () => {
+const play = (e) => {
     STATE = 'play';
-    playEl.textContent = 'pause';
-    playEl.removeEventListener('click', play);
-    playEl.addEventListener('click', pause);
+    let target = e.target;
+    target.textContent = 'pause';
+    target.removeEventListener('click', play);
+    target.addEventListener('click', pause);
     if (universeInitState.length > 0) {
 	universe = Universe.new_with_state(new Uint32Array(universeInitState));
     }
@@ -192,14 +194,32 @@ canvas.addEventListener('mousedown', canvasHandleMouseDown);
 canvas.addEventListener('mousemove', canvasHandleMouseMove);
 canvas.addEventListener('mouseup', canvasHandleMouseUp);
 
+
+const resetEl = document.getElementById("reset");
+const reset = () => {
+    STATE = 'stop';
+    universeInitState = [];
+    universe = Universe.new();
+    drawLines = [];
+    DRAW_IN_PROCESS = false;
+    DRAW_ON_CANVAS = false;
+    ctx.fillStyle = DEAD_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.stroke();
+    playEl.textContent = 'play';
+    playEl.removeEventListener('click', pause);
+    playEl.addEventListener('click', play);
+}
+
+resetEl.addEventListener('click', reset);
+
 const renderLoop = () => {
-    if (STATE == 'pause') {
+    if (STATE !== 'play') {
 	return;
     }
     universe.tick();
 
     drawGrid(ctx);
     drawUniverse(ctx, universe);
-    
     requestAnimationFrame(renderLoop);
 }
