@@ -28,9 +28,7 @@ pub struct Universe {
 // Public methods, exported to JavaScript
 #[wasm_bindgen]
 impl Universe {
-    pub fn new_with_state(alive_cells: &[u32]) -> Universe {
-        let width = 64;
-        let height = 64;
+    pub fn new_with_state(width: u32, height: u32, alive_cells: &[u32]) -> Universe {
         let size = (width * height) as usize;
         let mut is_alive: HashMap<u32, bool> = HashMap::new();
 
@@ -53,9 +51,7 @@ impl Universe {
             cells,
         }
     }
-    pub fn new() -> Universe {
-        let width = 64;
-        let height = 64;
+    pub fn new(width: u32, height: u32) -> Universe {
         let size = (width * height) as usize;
         let mut cells = FixedBitSet::with_capacity(size);
 
@@ -135,6 +131,19 @@ impl Universe {
             }
         }
         count
+    }
+}
+
+impl Universe {
+    // returns live cells indexes
+    pub fn get_live_cells(&self) -> Vec<u32> {
+        let mut alive = vec![];
+        for i in 0..self.cells.len() {
+            if self.cells[i] {
+                alive.push(i as u32);
+            }
+        }
+        alive
     }
 }
 

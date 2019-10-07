@@ -3,20 +3,23 @@ import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
 let universeInitState = [];
-let universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+// global reference
+let universe = null;
+// default universe size
+let width = 64;
+let height = 64;
+// global canvas context reference
+let ctx = null;
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = 'grey';
 const DEAD_COLOR = 'white';
 const ALIVE_COLOR = 'green';
 
+const inputWidth = document.getElementById("width");
+const inputHeight = document.getElementById("height");
 const canvas = document.getElementById("game-of-life-canvas");
-// 1px border size
-canvas.width = (CELL_SIZE +1) * width + 1;
-canvas.height = (CELL_SIZE + 1) * height +1;
-const ctx = canvas.getContext('2d');
+canvas.style = "border: 1px solid silver;";
 
 let STATE = 'stop';
 const playEl = document.getElementById("play");
@@ -35,8 +38,16 @@ const play = (e) => {
     target.textContent = 'pause';
     target.removeEventListener('click', play);
     target.addEventListener('click', pause);
+    width = parseInt(inputWidth.value);
+    height = parseInt(inputHeight.value);
+    // 1px border size
+    canvas.width = (CELL_SIZE +1) * width + 1;
+    canvas.height = (CELL_SIZE + 1) * height +1;
+    ctx = canvas.getContext('2d');
     if (universeInitState.length > 0) {
-	universe = Universe.new_with_state(new Uint32Array(universeInitState));
+	universe = Universe.new_with_state(width, height, new Uint32Array(universeInitState));
+    } else {
+	universe = Universe.new(width, height);
     }
     renderLoop();
 }
@@ -158,12 +169,6 @@ let DRAW_ON_CANVAS = false;
 let DRAW_IN_PROCESS = false;
 let drawLines = [];
 
-const canvasDraw = () => {
-    DRAW_ON_CANVAS = !DRAW_ON_CANVAS
-}
-const drawBtn = document.getElementById("draw");
-drawBtn.addEventListener('click', canvasDraw);
-
 const canvasHandleMouseDown = (e) => {
     if (!DRAW_ON_CANVAS) {
 	return;
@@ -218,6 +223,20 @@ const reset = () => {
 }
 
 resetEl.addEventListener('click', reset);
+
+const canvasDraw = () => {
+    if (ctx) {
+	reset();
+    }
+    DRAW_ON_CANVAS = !DRAW_ON_CANVAS;
+    width = parseInt(inputWidth.value);
+    height = parseInt(inputHeight.value);
+    canvas.width = (CELL_SIZE +1) * width + 1;
+    canvas.height = (CELL_SIZE + 1) * height +1;
+    ctx = canvas.getContext('2d');
+}
+const drawBtn = document.getElementById("draw");
+drawBtn.addEventListener('click', canvasDraw);
 
 const renderLoop = () => {
     if (STATE !== 'play') {
