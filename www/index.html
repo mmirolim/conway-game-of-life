@@ -23,8 +23,14 @@
       <button id="draw">Draw</button>
       <button id="play">Play</button>
       <button id="reset">Reset</button>
-      <input id="width" placeholder="width integer" value="64"/>
-      <input id="height" placeholder="height integer" value="64"/>
+      <div id="config">
+	<label for="width">width</label>
+	<input id="width" placeholder="width integer" value="64" size=5/>
+	<label for="height">height</label>
+	<input id="height" placeholder="height integer" value="64" size=5/>
+	<label for="slowdown">slowdown</label>
+	<input id="slowdown" placeholder="slowdown integer" value="1" size=5/>
+      </div>
     </div>
     <canvas id="game-of-life-canvas"></canvas>
     <script src="./bootstrap.js"></script>

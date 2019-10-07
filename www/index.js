@@ -18,6 +18,8 @@ const ALIVE_COLOR = 'green';
 
 const inputWidth = document.getElementById("width");
 const inputHeight = document.getElementById("height");
+const inputSlow = document.getElementById("slowdown");
+let slowdown = 1;
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.style = "border: 1px solid silver;";
 
@@ -34,6 +36,7 @@ const pause = (e) => {
 
 const play = (e) => {
     STATE = 'play';
+    slowdown = parseInt(inputSlow.value);
     let target = e.target;
     target.textContent = 'pause';
     target.removeEventListener('click', play);
@@ -250,5 +253,9 @@ const renderLoop = () => {
 
     drawGrid(ctx);
     drawUniverse(ctx, universe);
-    requestAnimationFrame(renderLoop);
+    if (slowdown > 1) {
+	setTimeout(()=>{requestAnimationFrame(renderLoop)}, 12*slowdown);
+    } else {
+	requestAnimationFrame(renderLoop);
+    }
 }
