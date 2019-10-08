@@ -2,7 +2,6 @@
 import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
-// TODO use input type range for animation speed
 // TODO record universe state
 let universeInitState = [];
 // global reference
@@ -20,8 +19,11 @@ const ALIVE_COLOR = 'green';
 
 const inputWidth = document.getElementById("width");
 const inputHeight = document.getElementById("height");
-const inputSlow = document.getElementById("slowdown");
-let slowdown = 1;
+const inputSpeed = document.getElementById("speed");
+const labelSpeed = document.getElementById("speed_label");
+inputSpeed.addEventListener('change', (e) => {
+    labelSpeed.textContent = 'speed ' + e.target.value;
+})
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.style = "border: 1px solid silver;";
 
@@ -36,7 +38,6 @@ const pause = (e) => {
 
 const play = (e) => {
     STATE = 'play';
-    slowdown = parseInt(inputSlow.value);
     let target = e.target;
     target.textContent = 'pause';
     width = parseInt(inputWidth.value);
@@ -253,13 +254,18 @@ const renderLoop = () => {
     if (STATE !== 'play') {
 	return;
     }
+    let speed = inputSpeed.value;
+
     universe.tick();
 
     drawGrid(ctx);
     drawUniverse(ctx, universe);
-    if (slowdown > 1) {
-	setTimeout(()=>{requestAnimationFrame(renderLoop)}, 12*slowdown);
+    if (speed < 0) {
+	setTimeout(()=>{requestAnimationFrame(renderLoop)}, -12*speed);
     } else {
+	for (let i = 1; i < speed; i++) {
+	    universe.tick();
+	}
 	requestAnimationFrame(renderLoop);
     }
 }

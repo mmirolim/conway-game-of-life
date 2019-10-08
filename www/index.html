@@ -28,8 +28,9 @@
 	<input id="width" placeholder="width integer" value="64" size=5/>
 	<label for="height">height</label>
 	<input id="height" placeholder="height integer" value="64" size=5/>
-	<label for="slowdown">slowdown</label>
-	<input id="slowdown" placeholder="slowdown integer" value="1" size=5/>
+	<label id="speed_label" for="speed">speed</label>
+	<input id="speed" type="range" placeholder="speed integer"
+	       min="-30" max="30" value="1" step="10"/>
       </div>
     </div>
     <canvas id="game-of-life-canvas"></canvas>
