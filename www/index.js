@@ -2,6 +2,8 @@
 import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
+// TODO use input type range for animation speed
+// TODO record universe state
 let universeInitState = [];
 // global reference
 let universe = null;
@@ -30,8 +32,6 @@ const pause = (e) => {
     STATE = 'pause';
     let target = e.target;
     target.textContent = 'play';
-    target.removeEventListener('click', pause);
-    target.addEventListener('click', play);
 }
 
 const play = (e) => {
@@ -39,8 +39,6 @@ const play = (e) => {
     slowdown = parseInt(inputSlow.value);
     let target = e.target;
     target.textContent = 'pause';
-    target.removeEventListener('click', play);
-    target.addEventListener('click', pause);
     width = parseInt(inputWidth.value);
     height = parseInt(inputHeight.value);
     // 1px border size
@@ -57,7 +55,13 @@ const play = (e) => {
     renderLoop();
 }
 
-playEl.addEventListener('click', play);
+playEl.addEventListener('click', event => {
+    if (STATE === 'pause' || STATE === 'stop') {
+	play(event);
+    } else {
+	pause(event);
+    }
+});
 
 const drawGrid = (ctx) => {
     ctx.beginPath();
