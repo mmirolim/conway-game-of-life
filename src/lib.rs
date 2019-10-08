@@ -43,7 +43,9 @@ pub struct Universe {
     width: u32,
     height: u32,
     cells: FixedBitSet,
+    alive: Vec<u32>,
 }
+
 // Public methods, exported to JavaScript
 #[wasm_bindgen]
 impl Universe {
@@ -57,10 +59,12 @@ impl Universe {
         );
         log!("alive_cells passed {:?}", alive_cells);
         let size = (width * height) as usize;
+        let mut alive = Vec::with_capacity(size);
         let mut is_alive: HashMap<u32, bool> = HashMap::new();
 
         for v in alive_cells.iter() {
             is_alive.insert(*v, true);
+            alive.push(*v);
         }
         let mut cells = FixedBitSet::with_capacity(size);
         for i in 0..size {
@@ -72,11 +76,13 @@ impl Universe {
                 },
             );
         }
+
         logtime_end!("universe::new_with_state");
         Universe {
             width,
             height,
             cells,
+            alive,
         }
     }
     pub fn new(width: u32, height: u32) -> Universe {
@@ -84,15 +90,23 @@ impl Universe {
         utils::set_panic_hook();
         let size = (width * height) as usize;
         let mut cells = FixedBitSet::with_capacity(size);
-
+        let mut alive = Vec::with_capacity(size);
         for i in 0..size {
-            cells.set(i, if Math::random() > 0.5 { true } else { false });
+            let alive = if Math::random() > 0.5 {
+                alive.push(i as u32);
+                true
+            } else {
+                false
+            };
+            cells.set(i, alive);
         }
+
         logtime_end!("universe::new()");
         Universe {
             width,
             height,
             cells,
+            alive,
         }
     }
     pub fn width(&self) -> u32 {
@@ -107,10 +121,15 @@ impl Universe {
         self.cells.as_slice().as_ptr()
     }
 
+    pub fn alive_cells(&self) -> *const u32 {
+        self.alive.as_slice().as_ptr()
+    }
+
     pub fn render(&self) -> String {
         self.to_string()
     }
     pub fn tick(&mut self) {
+        self.alive.clear();
         let mut next = self.cells.clone();
 
         for row in 0..self.height {
@@ -118,26 +137,26 @@ impl Universe {
                 let idx = self.get_index(row, col);
                 let cell = self.cells[idx];
                 let live_neighbors = self.live_neighbor_count(row, col);
-
-                next.set(
-                    idx,
-                    match (cell, live_neighbors) {
-                        // Rule 1: Any cell with fewer than 2 live neighbors dies,
-                        // as if caused by underpopulation
-                        (true, x) if x < 2 => false,
-                        // Rule 2: Any live cell with 2 or 3 live neighbors
-                        // lives on to the next generation
-                        (true, 2) | (true, 3) => true,
-                        // Rule 3: Any live cell with more than three live neighbors
-                        // dies, as if by overpopulation
-                        (true, x) if x > 3 => false,
-                        // Rule 4: Any dead cell with exactly 3 live neighbors
-                        // becomes a live cell, as if by reproduction
-                        (false, 3) => true,
-                        // All other cells remain in the same state
-                        (otherwise, _) => otherwise,
-                    },
-                );
+                let alive = match (cell, live_neighbors) {
+                    // Rule 1: Any cell with fewer than 2 live neighbors dies,
+                    // as if caused by underpopulation
+                    (true, x) if x < 2 => false,
+                    // Rule 2: Any live cell with 2 or 3 live neighbors
+                    // lives on to the next generation
+                    (true, 2) | (true, 3) => true,
+                    // Rule 3: Any live cell with more than three live neighbors
+                    // dies, as if by overpopulation
+                    (true, x) if x > 3 => false,
+                    // Rule 4: Any dead cell with exactly 3 live neighbors
+                    // becomes a live cell, as if by reproduction
+                    (false, 3) => true,
+                    // All other cells remain in the same state
+                    (otherwise, _) => otherwise,
+                };
+                next.set(idx, alive);
+                if alive {
+                    self.alive.push(idx as u32);
+                }
             }
         }
         self.cells = next;
@@ -182,18 +201,16 @@ impl Universe {
 
         count
     }
+
+    pub fn get_live_cells_count(&self) -> u32 {
+        self.alive.len() as u32
+    }
 }
 
 impl Universe {
     // returns live cells indexes
     pub fn get_live_cells(&self) -> Vec<u32> {
-        let mut alive = vec![];
-        for i in 0..self.cells.len() {
-            if self.cells[i] {
-                alive.push(i as u32);
-            }
-        }
-        alive
+        self.alive.to_vec()
     }
 }
 
@@ -207,5 +224,22 @@ impl fmt::Display for Universe {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Universe;
+    #[test]
+    pub fn test_tick() {
+        let width = 6;
+        let height = 6;
+        // set spaceship
+        let spaceship_cells: [u32; 5] = [9, 13, 15, 20, 21];
+        println!("input {:?}", spaceship_cells);
+        let mut universe = Universe::new_with_state(width, height, &spaceship_cells);
+        universe.tick();
+        let expected_spaceship_conf: [u32; 5] = [8, 15, 16, 20, 21];
+        assert_eq!(&universe.get_live_cells(), &expected_spaceship_conf);
     }
 }

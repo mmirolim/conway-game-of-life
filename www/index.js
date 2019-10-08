@@ -107,30 +107,25 @@ const bitIsSet = (n, arr) => {
     return (arr[byte] & mask) === mask;
 }
 
+const getRowColFromId = (id) => {
+    return {row: Math.floor(id / width), col: id % width}
+}
+
 const drawUniverse = (ctx, universe) => {
-    const cellsPtr = universe.cells();
-    const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
+    const cellsPtr = universe.alive_cells();
+    const numOfAlive = universe.get_live_cells_count();
+    const cells = new Uint32Array(memory.buffer, cellsPtr, numOfAlive);
 
     ctx.beginPath();
-    let deadCells = [];
-    ctx.fillStyle =  ALIVE_COLOR;
-    for (let row = 0; row < height; row++) {
-	for (let col = 0; col < width; col++) {
-	    const idx = getIndex(col, row);
-	    if (!bitIsSet(idx, cells)) {
-		deadCells.push(col)
-		deadCells.push(row);
-		continue;
-	    }
-	    ctx.fillRect(col * (CELL_SIZE+1) + 1, row * (CELL_SIZE + 1) + 1,
-			 CELL_SIZE, CELL_SIZE);
-	}
-    }
     ctx.fillStyle = DEAD_COLOR;
-    for (let i = 0; i < deadCells.length; i+=2) {
-	ctx.fillRect(deadCells[i] * (CELL_SIZE+1) + 1, deadCells[i+1] * (CELL_SIZE + 1) + 1,
-		     CELL_SIZE, CELL_SIZE);
-    }
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle =  ALIVE_COLOR;
+    cells.forEach((id) => {
+	const coord = getRowColFromId(id);
+	ctx.fillRect(coord.col * (CELL_SIZE+1) + 1, coord.row * (CELL_SIZE + 1) + 1,
+     		     CELL_SIZE, CELL_SIZE);
+    });
     ctx.stroke();
 }
 // return function defined by start, end coords
