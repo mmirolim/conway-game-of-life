@@ -12,6 +12,18 @@ macro_rules! log {
         web_sys::console::log_1(&format!( $( $t )*).into());
     }
 }
+
+macro_rules! logtime {
+    ( $t:tt ) => {
+        web_sys::console::time_with_label($t.into());
+    };
+}
+
+macro_rules! logtime_end {
+    ( $t:tt ) => {
+        web_sys::console::time_end_with_label($t.into());
+    };
+}
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -36,8 +48,13 @@ pub struct Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new_with_state(width: u32, height: u32, alive_cells: &[u32]) -> Universe {
+        logtime!("universe::new_with_state");
         utils::set_panic_hook();
-        log!("new_with_state called width {} height {}", width, height);
+        log!(
+            "universe::new_with_state called width {} height {}",
+            width,
+            height
+        );
         log!("alive_cells passed {:?}", alive_cells);
         let size = (width * height) as usize;
         let mut is_alive: HashMap<u32, bool> = HashMap::new();
@@ -55,6 +72,7 @@ impl Universe {
                 },
             );
         }
+        logtime_end!("universe::new_with_state");
         Universe {
             width,
             height,
@@ -62,6 +80,7 @@ impl Universe {
         }
     }
     pub fn new(width: u32, height: u32) -> Universe {
+        logtime!("universe::new()");
         utils::set_panic_hook();
         let size = (width * height) as usize;
         let mut cells = FixedBitSet::with_capacity(size);
@@ -69,7 +88,7 @@ impl Universe {
         for i in 0..size {
             cells.set(i, if Math::random() > 0.5 { true } else { false });
         }
-
+        logtime_end!("universe::new()");
         Universe {
             width,
             height,

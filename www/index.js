@@ -116,7 +116,6 @@ const drawUniverse = (ctx, universe) => {
     for (let row = 0; row < height; row++) {
 	for (let col = 0; col < width; col++) {
 	    const idx = getIndex(col, row);
-
 	    ctx.fillStyle = bitIsSet(idx, cells) ?  ALIVE_COLOR : DEAD_COLOR;
 	    ctx.fillRect(col * (CELL_SIZE+1) + 1, row * (CELL_SIZE + 1) + 1,
 			 CELL_SIZE, CELL_SIZE);
@@ -216,7 +215,6 @@ canvas.addEventListener('mousedown', canvasHandleMouseDown);
 canvas.addEventListener('mousemove', canvasHandleMouseMove);
 canvas.addEventListener('mouseup', canvasHandleMouseUp);
 
-
 const resetEl = document.getElementById("reset");
 const reset = () => {
     STATE = 'stop';
@@ -255,7 +253,6 @@ const renderLoop = () => {
 	return;
     }
     let speed = inputSpeed.value;
-
     universe.tick();
 
     drawGrid(ctx);
