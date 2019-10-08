@@ -111,6 +111,7 @@ impl Universe {
         self.to_string()
     }
     pub fn tick(&mut self) {
+        logtime!("universe::tick()");
         let mut next = self.cells.clone();
 
         for row in 0..self.height {
@@ -141,6 +142,7 @@ impl Universe {
             }
         }
         self.cells = next;
+        logtime_end!("universe::tick()");
     }
 
     fn get_index(&self, row: u32, column: u32) -> usize {

@@ -112,16 +112,25 @@ const drawUniverse = (ctx, universe) => {
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
 
     ctx.beginPath();
-
+    let deadCells = [];
+    ctx.fillStyle =  ALIVE_COLOR;
     for (let row = 0; row < height; row++) {
 	for (let col = 0; col < width; col++) {
 	    const idx = getIndex(col, row);
-	    ctx.fillStyle = bitIsSet(idx, cells) ?  ALIVE_COLOR : DEAD_COLOR;
+	    if (!bitIsSet(idx, cells)) {
+		deadCells.push(col)
+		deadCells.push(row);
+		continue;
+	    }
 	    ctx.fillRect(col * (CELL_SIZE+1) + 1, row * (CELL_SIZE + 1) + 1,
 			 CELL_SIZE, CELL_SIZE);
 	}
     }
-
+    ctx.fillStyle = DEAD_COLOR;
+    for (let i = 0; i < deadCells.length; i+=2) {
+	ctx.fillRect(deadCells[i] * (CELL_SIZE+1) + 1, deadCells[i+1] * (CELL_SIZE + 1) + 1,
+		     CELL_SIZE, CELL_SIZE);
+    }
     ctx.stroke();
 }
 // return function defined by start, end coords
