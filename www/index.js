@@ -111,11 +111,14 @@ const getRowColFromId = (id) => {
     return {row: Math.floor(id / width), col: id % width}
 }
 
-const drawUniverse = (ctx, universe) => {
+const getAliveCellsInUniverse = (universe) => {
     const cellsPtr = universe.alive_cells();
     const numOfAlive = universe.get_live_cells_count();
     const cells = new Uint32Array(memory.buffer, cellsPtr, numOfAlive);
+    return cells;
+}
 
+const drawUniverse = (ctx, cells) => {
     ctx.beginPath();
     ctx.fillStyle = DEAD_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -252,20 +255,63 @@ const canvasDraw = () => {
 const drawBtn = document.getElementById("draw");
 drawBtn.addEventListener('click', canvasDraw);
 
+let RECORDING = false;
+let RECORDS = [];
+const MAX_RECORDS = 100;
+
+const stateSlider = document.getElementById("ticks");
+const setState = () => {
+    const stateId = -1*stateSlider.value;
+    if (stateId < RECORDS.length) {
+	drawUniverse(ctx, RECORDS[stateId]);
+    }
+}
+stateSlider.addEventListener('change', setState);
+
+const recordBtn = document.getElementById("record");
+const record = () => {
+    if (!RECORDING) {
+	RECORDS = [];
+	recordBtn.textContent = "🔴";
+    } else {
+	recordBtn.textContent = "record";
+    }
+    RECORDING = !RECORDING;
+}
+
+recordBtn.addEventListener('click', record);
+
+const universeTick = () => {
+    universe.tick();
+    if (!RECORDING) {
+	return;
+    }
+    const cells = getAliveCellsInUniverse(universe);
+    let state = [];
+    for (let id of cells.values()) {
+	state.push(id);
+    }
+    RECORDS.push(state);
+    if (RECORDS.length > MAX_RECORDS) {
+	RECORDS.shift();
+    }
+}
+
 const renderLoop = () => {
     if (STATE !== 'play') {
 	return;
     }
     let speed = inputSpeed.value;
-    universe.tick();
+    universeTick();
 
     drawGrid(ctx);
-    drawUniverse(ctx, universe);
+    const cells = getAliveCellsInUniverse(universe);
+    drawUniverse(ctx, cells);
     if (speed < 0) {
 	setTimeout(()=>{requestAnimationFrame(renderLoop)}, -12*speed);
     } else {
 	for (let i = 1; i < speed; i++) {
-	    universe.tick();
+	    universeTick();
 	}
 	requestAnimationFrame(renderLoop);
     }
