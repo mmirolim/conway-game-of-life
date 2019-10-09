@@ -1,5 +1,5 @@
 [package]
-name = "game of life viewer"
+name = "game-of-life-viewer"
 version = "0.1.0"
 authors = ["Mirolim Mirzakhmedov <mirolim.mirzakhmedov@gmail.com>"]
 edition = "2018"
